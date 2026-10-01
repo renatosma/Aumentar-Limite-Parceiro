@@ -12,9 +12,10 @@ using System.Net.Sockets;
 /// </summary>
 public sealed class AmbienteExecucao
 {
-    public AmbienteExecucao(string? baseUrl)
+    public AmbienteExecucao(string? baseUrl, string? usuarioSap)
     {
         Servidor = FormatarServidor(baseUrl);
+        UsuarioSap = string.IsNullOrWhiteSpace(usuarioSap) ? "?" : usuarioSap.Trim();
         Maquina = Seguro(() => Environment.MachineName);
         UsuarioWindows = Seguro(FormatarUsuarioWindows);
         Ip = Seguro(EnderecoLocal);
@@ -22,6 +23,9 @@ public sealed class AmbienteExecucao
 
     /// <summary>Servidor da Service Layer no formato "host:porta".</summary>
     public string Servidor { get; }
+
+    /// <summary>Conta do SAP que autenticou a gravacao.</summary>
+    public string UsuarioSap { get; }
 
     public string Maquina { get; }
 

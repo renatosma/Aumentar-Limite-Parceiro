@@ -5,6 +5,7 @@ public class FormPrincipal : Form
 {
     private readonly BusinessPartnerCreditoQueryService _queryService;
     private readonly AumentoCreditLineService _aumentoService;
+    private readonly ServiceLayerConnectionFactory _connectionFactory;
     private readonly AjusteSettings _ajusteSettings;
 
     private readonly BindingList<BusinessPartnerCredito> _parceiros = new();
@@ -23,10 +24,11 @@ public class FormPrincipal : Form
     private Label lblAmbiente = null!;
     private Label lblStatus = null!;
 
-    public FormPrincipal(BusinessPartnerCreditoQueryService queryService, AumentoCreditLineService aumentoService, IOptions<AjusteSettings> ajusteOptions)
+    public FormPrincipal(BusinessPartnerCreditoQueryService queryService, AumentoCreditLineService aumentoService, ServiceLayerConnectionFactory connectionFactory, IOptions<AjusteSettings> ajusteOptions)
     {
         _queryService = queryService;
         _aumentoService = aumentoService;
+        _connectionFactory = connectionFactory;
         _ajusteSettings = ajusteOptions.Value;
 
         MontarLayout();
@@ -274,11 +276,19 @@ public class FormPrincipal : Form
             return;
         }
 
-        DefinirCarregando(true, "Aplicando aumento de CreditLine...");
+        // A gravacao usa a conta de quem esta aplicando, e nao a conta de servico da
+        // consulta: assim o SAP registra em OCRD quem alterou cada parceiro.
+        var (conexao, usuarioSap) = await AutenticarParaGravacaoAsync();
+        if (conexao is null)
+        {
+            return;
+        }
+
+        DefinirCarregando(true, $"Aplicando aumento de CreditLine como {usuarioSap}...");
 
         try
         {
-            var resultados = await _aumentoService.AplicarAsync(selecionados, percentual, modoSimulacao, (parceiro, resultado) =>
+            var resultados = await _aumentoService.AplicarAsync(conexao, usuarioSap, selecionados, percentual, modoSimulacao, (parceiro, resultado) =>
             {
                 dgvParceiros.Refresh();
                 lblStatus.Text = $"Processando... {parceiro.CardCode}: {parceiro.Status}";
@@ -287,7 +297,7 @@ public class FormPrincipal : Form
             var sucesso = resultados.Count(r => r.Sucesso);
             var erro = resultados.Count(r => !r.Sucesso);
 
-            lblStatus.Text = $"{(modoSimulacao ? "Simulacao" : "Aumento")} concluido(a): {sucesso} OK, {erro} erro(s).";
+            lblStatus.Text = $"{(modoSimulacao ? "Simulacao" : "Aumento")} concluido(a) por {usuarioSap}: {sucesso} OK, {erro} erro(s).";
             MessageBox.Show(this, lblStatus.Text, "Concluido", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
         catch (Exception ex)
@@ -296,7 +306,48 @@ public class FormPrincipal : Form
         }
         finally
         {
+            try
+            {
+                // A Service Layer tem limite de sessoes simultaneas: cada login feito
+                // aqui precisa ser encerrado, mesmo quando a aplicacao falha no meio.
+                await conexao.LogoutAsync();
+            }
+            catch
+            {
+                // Sessao ja expirada ou servidor indisponivel: nao atrapalha o usuario.
+            }
+
             DefinirCarregando(false, lblStatus.Text);
+        }
+    }
+
+    /// <summary>
+    /// Pede usuario e senha do SAP e devolve a conexao autenticada, ou null se o usuario
+    /// cancelar ou a autenticacao falhar (nesses casos a mensagem ja foi exibida).
+    /// </summary>
+    private async Task<(B1SLayer.SLConnection? Conexao, string Usuario)> AutenticarParaGravacaoAsync()
+    {
+        using var login = new FormLogin(
+            AmbienteExecucao.FormatarServidor(_connectionFactory.Settings.BaseUrl),
+            _connectionFactory.Settings.CompanyDB);
+
+        if (login.ShowDialog(this) != DialogResult.OK)
+        {
+            return (null, string.Empty);
+        }
+
+        var usuarioSap = login.Usuario;
+        DefinirCarregando(true, $"Autenticando {usuarioSap} no SAP...");
+
+        try
+        {
+            return (await _connectionFactory.CriarAsync(login.Usuario, login.Senha), usuarioSap);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, ex.Message, "Falha na autenticacao", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            DefinirCarregando(false, "Autenticacao cancelada.");
+            return (null, string.Empty);
         }
     }
 

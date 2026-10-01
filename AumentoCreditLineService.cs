@@ -23,26 +23,32 @@ public class AumentoCreditLineService
     public static double CalcularNovoValor(double creditLimitAtual, decimal percentual)
         => creditLimitAtual * (1 + (double)percentual / 100);
 
+    /// <param name="sl">
+    /// Conexao autenticada com a conta de quem esta aplicando o aumento — nao a conta de
+    /// servico usada na consulta. Encerrar a sessao e responsabilidade de quem chamou.
+    /// </param>
+    /// <param name="usuarioSap">Conta do SAP autenticada em <paramref name="sl"/>, registrada no log.</param>
     public async Task<List<AumentoCreditLineResultado>> AplicarAsync(
+        B1SLayer.SLConnection sl,
+        string usuarioSap,
         IEnumerable<BusinessPartnerCredito> selecionados,
         decimal percentual,
         bool modoSimulacao,
         Action<BusinessPartnerCredito, AumentoCreditLineResultado>? aoProcessarUm = null)
     {
-        var sl = await _queryService.ObterConexaoAsync();
         var companyDb = _queryService.Settings.CompanyDB;
         var lista = selecionados.ToList();
         var resultados = new List<AumentoCreditLineResultado>();
 
         // Lido uma vez: servidor, maquina, usuario e IP sao fixos durante a execucao,
         // e vao repetidos em cada linha para que o CSV identifique a origem sozinho.
-        var ambiente = new AmbienteExecucao(_queryService.Settings.BaseUrl);
+        var ambiente = new AmbienteExecucao(_queryService.Settings.BaseUrl, usuarioSap);
 
         var pastaLogs = Path.Combine(AppContext.BaseDirectory, _ajusteSettings.PastaLogs);
         Directory.CreateDirectory(pastaLogs);
         var logPath = Path.Combine(pastaLogs, $"Log_AumentoCreditLine_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
         using var logWriter = new StreamWriter(logPath, append: false, Encoding.UTF8) { AutoFlush = true };
-        await logWriter.WriteLineAsync("DataHora,Servidor,CompanyDB,Maquina,UsuarioWindows,IP,CardCode,Percentual,CreditLimitAnterior,CreditLimitNovo,ModoSimulacao,Status,Detalhe");
+        await logWriter.WriteLineAsync("DataHora,Servidor,CompanyDB,UsuarioSAP,Maquina,UsuarioWindows,IP,CardCode,Percentual,CreditLimitAnterior,CreditLimitNovo,ModoSimulacao,Status,Detalhe");
 
         foreach (var p in lista)
         {
@@ -123,6 +129,7 @@ public class AumentoCreditLineService
             DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture),
             CsvEscape(ambiente.Servidor),
             CsvEscape(companyDb),
+            CsvEscape(ambiente.UsuarioSap),
             CsvEscape(ambiente.Maquina),
             CsvEscape(ambiente.UsuarioWindows),
             CsvEscape(ambiente.Ip),

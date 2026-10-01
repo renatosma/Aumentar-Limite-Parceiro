@@ -24,10 +24,27 @@ literal de data no Service Layer varia por versão e localização.
 3. Marque os clientes (ou **Marcar Todos**).
 4. Desmarque **Modo simulação** — enquanto ele estiver marcado, o botão
    **Aplicar Aumento** fica desabilitado. É uma trava deliberada.
-5. **Aplicar Aumento** e confirme.
+5. **Aplicar Aumento**, confirme, e informe **seu usuário e senha do SAP** na tela
+   de login que aparece.
 
 A faixa no topo da janela mostra sempre o **servidor** e a **base de dados** em uso.
 Quando o `CompanyDB` contém `PRD`, ela fica vermelha com o aviso `PRODUCAO`.
+
+### Duas contas, de propósito
+
+| Etapa | Conta |
+|---|---|
+| Consultar os elegíveis | Conta de serviço do `appsettings.json` |
+| Gravar o aumento | **Conta do SAP de quem está aplicando**, pedida na hora |
+
+A gravação não usa a conta de serviço. Assim o SAP registra em `OCRD`
+(`UpdateDate` / `UserSign`) quem alterou cada parceiro, em vez de atribuir tudo a
+um usuário genérico — e o CSV guarda a mesma informação na coluna `UsuarioSAP`.
+
+A senha digitada existe apenas em memória enquanto a conexão é criada: não é
+gravada em arquivo nem no log. A sessão aberta com ela é encerrada
+(`LogoutAsync`) ao final, inclusive quando a aplicação falha no meio — a Service
+Layer tem limite de sessões simultâneas.
 
 ### MaxCommitment
 
@@ -65,7 +82,7 @@ cp appsettings.example.json appsettings.json
 Um CSV por execução, em `<pasta do exe>\Logs\Log_AumentoCreditLine_<data>_<hora>.csv`:
 
 ```
-DataHora,Servidor,CompanyDB,Maquina,UsuarioWindows,IP,CardCode,Percentual,
+DataHora,Servidor,CompanyDB,UsuarioSAP,Maquina,UsuarioWindows,IP,CardCode,Percentual,
 CreditLimitAnterior,CreditLimitNovo,ModoSimulacao,Status,Detalhe
 ```
 
@@ -88,7 +105,8 @@ Obfuscar no post-build (`_Obfuscar\Obfuscar.Console.exe`).
 
 ```
 Program.cs                            composition root (DI) e entrada
-FormPrincipal.cs                      tela única
+FormPrincipal.cs                      tela principal
+FormLogin.cs                          login do SAP, pedido ao aplicar
 AmbienteExecucao.cs                   servidor, máquina, usuário e IP
 CompanyLayer.cs                       seção "ServiceLayer" do appsettings
 AjusteSettings.cs                     seção "Ajuste" do appsettings
