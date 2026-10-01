@@ -64,7 +64,9 @@ public class FormPrincipal : Form
 
         nudPercentual = new NumericUpDown
         {
-            Minimum = -100,
+            // A ferramenta so aumenta: percentual negativo reduziria o CreditLimit dos
+            // clientes. O minimo zero impede ate de digitar um valor negativo no campo.
+            Minimum = 0,
             Maximum = 1000,
             DecimalPlaces = 2,
             Increment = 0.5m,
@@ -244,9 +246,11 @@ public class FormPrincipal : Form
     private async void BtnAplicar_Click(object? sender, EventArgs e)
     {
         var percentual = nudPercentual.Value;
-        if (percentual == 0)
+        if (percentual <= 0)
         {
-            MessageBox.Show(this, "Informe um percentual diferente de zero.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            // Segunda barreira: o campo ja impede negativo, mas um percentual que nao
+            // seja maior que zero nunca pode chegar na gravacao.
+            MessageBox.Show(this, "Informe um percentual maior que zero.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             return;
         }
 

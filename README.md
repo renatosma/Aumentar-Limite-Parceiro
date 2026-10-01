@@ -53,6 +53,19 @@ SAP recusa a gravação com *"O limite de compromisso deve ser maior que o limit
 crédito"*. No Service Layer a propriedade se chama `MaxCommitment`, igual ao DI API
 (o campo físico é `OCRD.DebtLine`).
 
+### A ferramenta só aumenta
+
+Percentual negativo **nunca** é aceito — reduziria o limite de crédito dos
+clientes. São três barreiras independentes:
+
+1. O campo de percentual tem mínimo zero: não dá nem para digitar negativo.
+2. Ao aplicar, qualquer valor que não seja maior que zero é recusado com aviso.
+3. `AumentoCreditLineService.AplicarAsync` lança `ArgumentOutOfRangeException`
+   antes de abrir o log — vale para qualquer chamador, não só para a tela.
+
+Na prévia (**Calcular**), percentual não positivo devolve o valor atual
+inalterado, para que a coluna "CreditLimit novo" nunca mostre redução.
+
 ### O aumento é cumulativo
 
 A ferramenta aplica o percentual sobre o valor **atual** do SAP. Rodar duas vezes

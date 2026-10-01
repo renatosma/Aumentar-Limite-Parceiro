@@ -19,9 +19,13 @@ public class AumentoCreditLineService
         _ajusteSettings = ajusteOptions.Value;
     }
 
-    /// <summary>CreditLimit com o percentual aplicado. CreditLimit 0 (sem limite no SAP) permanece 0.</summary>
+    /// <summary>
+    /// CreditLimit com o percentual aplicado. CreditLimit 0 (sem limite no SAP) permanece 0.
+    /// Percentual negativo e ignorado (devolve o valor atual): a ferramenta so aumenta, e
+    /// nem a previa na tela pode mostrar um valor menor que o atual.
+    /// </summary>
     public static double CalcularNovoValor(double creditLimitAtual, decimal percentual)
-        => creditLimitAtual * (1 + (double)percentual / 100);
+        => percentual <= 0 ? creditLimitAtual : creditLimitAtual * (1 + (double)percentual / 100);
 
     /// <param name="sl">
     /// Conexao autenticada com a conta de quem esta aplicando o aumento — nao a conta de
@@ -36,6 +40,17 @@ public class AumentoCreditLineService
         bool modoSimulacao,
         Action<BusinessPartnerCredito, AumentoCreditLineResultado>? aoProcessarUm = null)
     {
+        // Ultima barreira antes da gravacao, e a que vale para qualquer chamador: esta
+        // ferramenta so aumenta. Um percentual negativo reduziria o CreditLimit dos
+        // clientes, e zero gravaria sem efeito. Lancado antes de abrir o arquivo de log.
+        if (percentual <= 0)
+        {
+            throw new ArgumentOutOfRangeException(
+                nameof(percentual),
+                percentual,
+                "O percentual deve ser maior que zero: a ferramenta nunca reduz o CreditLimit.");
+        }
+
         var companyDb = _queryService.Settings.CompanyDB;
         var lista = selecionados.ToList();
         var resultados = new List<AumentoCreditLineResultado>();
