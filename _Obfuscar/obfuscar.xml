@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Include>
+  <Var name="RegenerateDebugInfo" value="false" />
+  <Var name="MarkedOnly" value="false" />
+  <Var name="RenameProperties" value="true" />
+  <Var name="RenameEvents" value="true" />
+  <Var name="RenameFields" value="true" />
+  <Var name="KeepPublicApi" value="true" />
+  <Var name="HidePrivateApi" value="true" />
+  <Var name="ReuseNames" value="false" />
+  <Var name="HideStrings" value="true" />
+  <Var name="OptimizeMethods" value="true" />
+  <Var name="SuppressIldasm" value="true" />
+  <Var name="AnalyzeXaml" value="true" />
+  <Var name="UseUnicodeNames" value="false" />
+  <Var name="UseKoreanNames" value="true" />
+  <Module file="$(InPath)\AumentoCreditLineBP.dll">
+    <SkipType name="*AnonymousType*" skipProperties="true" skipMethods="true" skipFields="true" skipEvents="true" skipStringHiding="true" />
+  </Module>
+  <AssemblySearchPath path="C:\Program Files\dotnet\packs\Microsoft.NETCore.App.Ref\10.0.12\ref\net10.0\" />
+  <AssemblySearchPath path="C:\Program Files\dotnet\packs\Microsoft.WindowsDesktop.App.Ref\10.0.12\ref\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\b1slayer\2.2.0\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\flurl.http\4.0.2\lib\net6.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\flurl\4.0.0\lib\netstandard2.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.caching.abstractions\6.0.1\lib\netstandard2.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.caching.memory\6.0.3\lib\netstandard2.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.configuration.abstractions\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.configuration.binder\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.configuration.environmentvariables\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.configuration.fileextensions\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.configuration.json\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.configuration\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.dependencyinjection.abstractions\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.dependencyinjection\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.fileproviders.abstractions\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.fileproviders.physical\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.filesystemglobbing\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.logging.abstractions\6.0.4\lib\net6.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.options.configurationextensions\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.options\10.0.10\lib\net10.0\" />
+  <AssemblySearchPath path="C:\Users\renato.azevedo\.nuget\packages\microsoft.extensions.primitives\10.0.10\lib\net10.0\" />
+</Include>

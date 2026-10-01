@@ -1,0 +1,13 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+
+# Configuracao com credencial: use appsettings.example.json como modelo.
+appsettings.json
+
+# Logs de auditoria gerados pela ferramenta
+Logs/
